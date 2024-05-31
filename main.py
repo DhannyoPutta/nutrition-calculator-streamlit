@@ -20,10 +20,6 @@ with st.sidebar:
 
 
 col1, col2 = st.columns(2)
-
-height = 160
-weight = 80
-age = 18
     
 height = col1.number_input("Height in cm")
 weight = col1.number_input("Mass in kg")
