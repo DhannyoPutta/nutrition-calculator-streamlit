@@ -1,13 +1,39 @@
 import streamlit as st
 import pandas as pd
+import random
+
+st.title("Dietary Planner")
+st.sidebar.header("Chat with Nutritionist")
+
+with st.sidebar:
+    messages = st.container(height=720)
+    if prompt := st.chat_input("Chat with Personal Nutritionist"):
+        messages.chat_message("user").write(prompt)
+        response = random.choice(
+        [
+            "Sate Padang",
+            "Rendang Sapi",
+            "Nasi Goreng",
+        ]
+    )
+        messages.chat_message("nutritionist").write(response)
+
 
 col1, col2 = st.columns(2)
+
+height = 160
+weight = 80
+age = 18
     
 height = col1.number_input("Height in cm")
 weight = col1.number_input("Mass in kg")
 age = col1.number_input("Age")
 
-df = pd.DataFrame({'Activity Level': ["Sedentary", "Lightly active", "Moderately active", "Very active", "Super active"]})
+df = pd.DataFrame({'Activity Level': ["Sedentary - Less than 5,000 steps daily", 
+                                      "Lightly active - About 5,000 to 7,499 steps daily", 
+                                      "Moderately active - About 7,500 to 9,999 steps daily", 
+                                      "Very active - More than 10,000 steps daily", 
+                                      "Super active - More than 12,500 steps daily"]})
 df1 = pd.DataFrame({'Gender': ["Male", "Female"]})
 
 activityLevel = col2.selectbox(
@@ -23,7 +49,7 @@ gender = col2.selectbox(
 c1 = st.container()
 col1, col2 = c1.columns(2)
 
-BMR = 0
+BMR = 0.0
 if (gender == "Male"):
     BMR = 88.362 + (13.397 * float(weight)) + (4.799 * float(height)) - (5.677 * float(age))
 else:
@@ -33,22 +59,46 @@ col1.metric(label="Basal Metabolic Rate", value=BMR)
 
 #If statement to determine normal or not
 
-TDEE = 0
+TDEE = 0.0
 match (activityLevel):
-    case "Sedentary":
+    case "Sedentary - Less than 5,000 steps daily":
         TDEE = BMR*1.2
-    case "Lightly active":
+    case "Lightly active - About 5,000 to 7,499 steps daily":
         TDEE = BMR*1.375
-    case "Moderately active":
+    case "Moderately active - About 7,500 to 9,999 steps daily":
         TDEE = BMR*1.55
-    case "Very active":
+    case "Very active - More than 10,000 steps daily":
         TDEE = BMR*1.725
-    case "Super active":
+    case "Super active - More than 12,500 steps daily":
         TDEE = BMR*1.9   
     case _:
         TDEE = 0
-TDEE = round(TDEE, 1)
-col1.metric(label="Total Daily Energy Expenditure", value=TDEE)
+TDEE = round(TDEE, 2)
+col1.metric(label="Total Daily Energy Expenditure (kcals)", value=TDEE)
+
+recommendedIntake = TDEE
+
+BMI = 0.0
+if (weight > 0 and height  > 0):
+    BMI = float(weight)/(height*height)*10000
+BMI = round(BMI, 1)
+BMIStatus = ""
+
+if (BMI < 18.5):
+    BMIStatus = "Underweight"
+    recommendedIntake += 500
+elif(BMI>18.5 and BMI<25):
+    BMIStatus = "Normal"
+elif(BMI>25 and BMI<30):
+    BMIStatus = "Overweight"
+    recommendedIntake -= 500
+else:
+    BMIStatus = "Obese"
+    recommendedIntake -= 1000
+
+recommendedIntake = round(recommendedIntake, 2)
+col1.metric(label="Recommmended Daily Intake (kcals)", value=recommendedIntake)
+col1.metric(label="Body Mass Index", value=str(BMI)+" (" + BMIStatus + ")")
 
 carbohydrates0 = round(45/100 * TDEE, 2)
 carbohydrates1 = round(65/100 * TDEE, 2)
@@ -61,29 +111,7 @@ col2.metric(label="Recommended Daily Carbohydrate Intake (kcals)", value=str(car
 col2.metric(label="Recommended Daily Protein Intake (kcals)", value=str(proteins0) + " - " + str (proteins1))
 col2.metric(label="Recommended Daily Fat Intake (kcals)", value=str(fats0) + " - " + str (fats1))
 
-#Calculating Macronutrient Needs
 
-#Basal Metabolic Rate (BMR): This is the number of calories your body needs at rest to maintain vital functions.
-#Harris-Benedict Equation: Done
-#For men: BMR = 88.362 + (13.397 * weight in kg) + (4.799 * height in cm) - (5.677 * age in years)
-#For women: BMR = 447.593 + (9.247 * weight in kg) + (3.098 * height in cm) - (4.330 * age in years)
-
-#Total Daily Energy Expenditure (TDEE): This is the number of calories you need per day based on activity level. Done
-#TDEE = BMR * Activity Factor
-#Activity Factors:
-#Sedentary (little or no exercise): BMR * 1.2
-#Lightly active (light exercise/sports 1-3 days/week): BMR * 1.375
-#Moderately active (moderate exercise/sports 3-5 days/week): BMR * 1.55
-#Very active (hard exercise/sports 6-7 days a week): BMR * 1.725
-#Super active (very hard exercise/physical job): BMR * 1.9
-
-#Macronutrient Distribution: Done
-#Carbohydrates: 45-65% of total daily calories
-#Proteins: 10-35% of total daily calories
-#Fats: 20-35% of total daily calories
-
-#Information needed from users: Done
-#Height in cm
-#Weight in kg
-#Age in years
-#Activity Level
+st.markdown("# Swiss Food Database")
+foodf = pd.read_csv("Swiss_food_composition_database.csv", encoding='unicode_escape')
+st.dataframe(foodf, use_container_width=True)
