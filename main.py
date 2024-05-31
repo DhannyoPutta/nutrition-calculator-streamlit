@@ -107,7 +107,6 @@ col2.metric(label="Recommended Daily Carbohydrate Intake (kcals)", value=str(car
 col2.metric(label="Recommended Daily Protein Intake (kcals)", value=str(proteins0) + " - " + str (proteins1))
 col2.metric(label="Recommended Daily Fat Intake (kcals)", value=str(fats0) + " - " + str (fats1))
 
-
 st.markdown("# Swiss Food Database")
 foodf = pd.read_csv("Swiss_food_composition_database.csv", encoding='unicode_escape')
 st.dataframe(foodf, use_container_width=True)
