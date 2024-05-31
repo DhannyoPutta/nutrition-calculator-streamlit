@@ -18,7 +18,6 @@ with st.sidebar:
     )
         messages.chat_message("nutritionist").write(response)
 
-
 col1, col2 = st.columns(2)
     
 height = col1.number_input("Height in cm")
@@ -52,8 +51,6 @@ else:
     BMR = 447.593 + (9.247 * float(weight)) + (3.098 * float(height)) - (4.330 * float(age))
 BMR = round(BMR, 1)
 col1.metric(label="Basal Metabolic Rate", value=BMR)
-
-#If statement to determine normal or not
 
 TDEE = 0.0
 match (activityLevel):
